@@ -63,19 +63,6 @@ class Post extends Entity
         // Cast post_category as array
         $this->post_category = (array) $this->post_category;
 
-        // Update entity
-        $post_id = wp_insert_post($this->getData(), true);
-
-        // Handle errors
-        if (is_wp_error($post_id)) {
-            wp_delete_post($this->ID, true);
-            WP_CLI::error(html_entity_decode($post_id->get_error_message()), false);
-            WP_CLI::error(sprintf('An error occured while updating the post ID %d, it has been deleted.', $this->ID), false);
-            $this->setCurrentId(false);
-
-            return false;
-        }
-
         // Save terms
         if ($tax_input && is_array($tax_input)) {
             foreach ($tax_input as $taxonomy => $terms) {
@@ -123,6 +110,19 @@ class Post extends Entity
                 }
                 update_field($field['key'], $value, $post_id);
             }
+        }
+        
+        // Update entity
+        $post_id = wp_insert_post($this->getData(), true);
+
+        // Handle errors
+        if (is_wp_error($post_id)) {
+            wp_delete_post($this->ID, true);
+            WP_CLI::error(html_entity_decode($post_id->get_error_message()), false);
+            WP_CLI::error(sprintf('An error occured while updating the post ID %d, it has been deleted.', $this->ID), false);
+            $this->setCurrentId(false);
+
+            return false;
         }
 
         return true;
